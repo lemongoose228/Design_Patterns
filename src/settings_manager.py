@@ -1,4 +1,3 @@
-# src/settings_manager.py
 from src.models.settings import Settings
 from src.models.company_model import CompanyModel
 import json
@@ -49,23 +48,21 @@ class SettingsManager:
         
         if "company" in config_data:
             company_info = config_data["company"]
-            company_obj = CompanyModel()
             
             # Устанавливаем все свойства компании
             if "name" in company_info:
-                company_obj.name = company_info["name"]
+                settings.organization.name = company_info["name"]
             if "inn" in company_info:
-                company_obj.inn = company_info["inn"]
+                settings.organization.inn = company_info["inn"]
             if "account" in company_info:
-                company_obj.account = company_info["account"]
+                settings.organization.account = company_info["account"]
             if "correspondent_account" in company_info:
-                company_obj.correspondent_account = company_info["correspondent_account"]
+                settings.organization.correspondent_account = company_info["correspondent_account"]
             if "BIK" in company_info:
-                company_obj.BIK = company_info["BIK"]
+                settings.organization.BIK = company_info["BIK"]
             if "ownership_type" in company_info:
-                company_obj.ownership_type = company_info["ownership_type"]
+                settings.organization.ownership_type = company_info["ownership_type"]
             
-            settings.organization = company_obj
         
         return settings
 
