@@ -82,8 +82,7 @@ class SettingsManager:
 
     def set_default_config(self):
         """Устанавливает конфигурацию по умолчанию"""
-        default_company = CompanyModel()
-        default_company.name = "Ромашка"
+        default_company = CompanyModel("Ромашка")
         default_company.inn = "123456789012"
         default_company.account = "12345678901"
         default_company.correspondent_account = "12345678901"
