@@ -1,5 +1,10 @@
 {
     "company": {
-        "name": "Ромашка"
+        "INN": 771234567890,
+        "account": "40702810123",
+        "correspondent_account": "30101810745",
+        "BIK": "044525987",
+        "name": "Ромашка",
+        "ownership_type": "ООО"
     }
 }
