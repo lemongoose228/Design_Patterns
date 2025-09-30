@@ -1,21 +1,16 @@
-class CompanyModel:
-    __name: str = ""
+from src.core.abstract_model import AbstractModel
+
+
+class CompanyModel(AbstractModel):
     __inn: str = ""
     __account: str = ""
     __correspondent_account: str = ""
     __BIK: str = ""
     __ownership_type: str = ""
 
-    @property
-    def name(self) -> str:
-        return self.__name
-    
-    @name.setter
-    def name(self, value: str) -> str:
-        if value.strip() != "":
-            self.__name = value.strip()
-        else:
-            raise ValueError("Наименование не может быть пустым")
+
+    def __init__(self, name: str = ""):
+        super().__init__(name)
 
     @property
     def inn(self) -> str:

@@ -4,7 +4,7 @@ class Settings:
     __organization: CompanyModel = None
 
     def __init__(self):
-        self.__organization = CompanyModel()
+        self.__organization = CompanyModel("Новая организация")
 
     @property
     def organization(self) -> CompanyModel:

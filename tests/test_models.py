@@ -1,14 +1,20 @@
+import uuid
 from src.settings_manager import SettingsManager
 from src.models.company_model import CompanyModel
 from src.models.settings import Settings
 import unittest
-
+from src.core.abstract_model import AbstractModel
+from src.core.validator import ArgumentException
+from src.models.storage_model import StorageModel
+from src.models.unit_model import UnitModel
+from src.models.nomenclature_group_model import NomenclatureGroupModel
+from src.models.nomenclature_model import NomenclatureModel
 
 class TestCompanyModel(unittest.TestCase):
 
     def test_create_empty_company(self):
-        company = CompanyModel()
-        self.assertEqual(company.name, "")
+        company = CompanyModel("ООО Япончикус Первый")
+        self.assertEqual(company.name, "ООО Япончикус Первый")
         self.assertEqual(company.inn, "")
         self.assertEqual(company.account, "")
         self.assertEqual(company.correspondent_account, "")
@@ -16,10 +22,10 @@ class TestCompanyModel(unittest.TestCase):
         self.assertEqual(company.ownership_type, "")
 
     def test_company_all_properties_assignment(self):
-        company = CompanyModel()
+        company = CompanyModel("Тестовая компания")
         
         # Устанавливаем все свойства
-        company.name = "Тестовая компания"
+
         company.inn = "123456789012"
         company.account = "12345678901"
         company.correspondent_account = "98765432109"
@@ -35,7 +41,7 @@ class TestCompanyModel(unittest.TestCase):
         self.assertEqual(company.ownership_type, "ООО")
 
     def test_company_data_validation(self):
-        company = CompanyModel()
+        company = CompanyModel("Тестовая компания")
         
         # Проверка корректных данных
         company.inn = "123456789012"
@@ -68,10 +74,9 @@ class TestCompanyModel(unittest.TestCase):
 
     def test_settings_all_properties(self):
         settings = Settings()
-        new_company = CompanyModel()
+        new_company = CompanyModel("Новая организация")
         
         # Устанавливаем все свойства
-        new_company.name = "Новая организация"
         new_company.inn = "987654321098"
         new_company.account = "98765432109"
         new_company.correspondent_account = "12345678901"
@@ -136,3 +141,84 @@ class TestCompanyModel(unittest.TestCase):
         self.assertEqual(manager.app_config.organization.correspondent_account, "12345678901")
         self.assertEqual(manager.app_config.organization.BIK, "123456789")
         self.assertEqual(manager.app_config.organization.ownership_type, "ООО")
+
+    # Проверка на сравнение двух по значению одинаковых моделей
+    def test_equals_storage_model_create(self):
+        # переопределить сравнение
+        id = uuid.uuid4().hex
+        storage1 = StorageModel("Склад хлеба")
+        storage1.id = id
+        storage2 = StorageModel("Склад хлеба2")
+        storage2.id = id
+
+        assert storage1 == storage2
+
+
+class TestAbstractReference(unittest.TestCase):
+
+    
+    def test_creation(self):
+        """Тест создания базовой модели"""
+        model = AbstractModel("Тест")
+        self.assertEqual(model.name, "Тест")
+        self.assertIsNotNone(model.id)
+    
+    def test_name_validation(self):
+        """Тест валидации наименования"""
+        with self.assertRaises(ArgumentException):
+            AbstractModel("")
+        
+        with self.assertRaises(ArgumentException):
+            AbstractModel("A" * 51)
+        
+        # Корректное имя
+        model = AbstractModel("A" * 50)
+        self.assertEqual(len(model.name), 50)
+
+
+class TestUnitModel(unittest.TestCase):
+    
+    def test_creation(self):
+        """Тест создания единицы измерения"""
+        unit = UnitModel("грамм", 1.0)
+        self.assertEqual(unit.name, "грамм")
+        self.assertEqual(unit.factor, 1.0)
+        self.assertIsNone(unit.base_unit)
+
+    def test_factor_validation(self):
+        """Тест валидации коэффициента"""
+        with self.assertRaises(ArgumentException):
+            UnitModel("тест", 0)  # Нулевой коэффициент
+        
+        with self.assertRaises(ArgumentException):
+            UnitModel("тест", -1)  # Отрицательный коэффициент
+
+
+class TestNomenclatureModel(unittest.TestCase):
+    
+    def test_creation(self):
+        """Тест создания номенклатуры"""
+        group = NomenclatureGroupModel("Группа 1")
+        unit = UnitModel("шт", 1.0)
+        
+        nomenclature = NomenclatureModel(
+            name="Товар 1",
+            full_name="Полное наименование товара 1",
+            group=group,
+            unit=unit
+        )
+        
+        self.assertEqual(nomenclature.name, "Товар 1")
+        self.assertEqual(nomenclature.full_name, "Полное наименование товара 1")
+        self.assertEqual(nomenclature.group, group)
+        self.assertEqual(nomenclature.unit, unit)
+    
+    def test_full_name_validation(self):
+        """Тест валидации полного наименования"""
+        # Корректная длина
+        nomenclature = NomenclatureModel("Тест", "A" * 255)
+        self.assertEqual(len(nomenclature.full_name), 255)
+        
+        # Слишком длинное наименование
+        with self.assertRaises(ArgumentException):
+            NomenclatureModel("Тест", "A" * 256)
