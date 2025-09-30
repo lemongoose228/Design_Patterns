@@ -1,5 +1,6 @@
 from src.core.abstract_model import AbstractModel
 from src.core.validator import ArgumentException, Validator
+
 class UnitModel(AbstractModel):
     __base_unit = None
     __factor: float = 1.0
@@ -16,7 +17,7 @@ class UnitModel(AbstractModel):
     @base_unit.setter
     def base_unit(self, value):
         if value is not None and not isinstance(value, UnitModel):
-            raise ArgumentException("Базовая единица измерения должна быть экземпляром UnitModel")
+            raise ArgumentException("Базовая единица измерения должна быть экземпляром UnitModel или None")
         self.__base_unit = value
 
     @property
