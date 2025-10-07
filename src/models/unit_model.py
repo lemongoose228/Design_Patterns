@@ -17,7 +17,7 @@ class UnitModel(AbstractModel):
     @base_unit.setter
     def base_unit(self, value):
         if value is not None and not isinstance(value, UnitModel):
-            raise ArgumentException("Базовая единица измерения должна быть экземпляром UnitModel или None")
+            raise ArgumentException("Базовая единица измерения должна быть экземпляром UnitModel")
         self.__base_unit = value
 
     @property
@@ -30,3 +30,14 @@ class UnitModel(AbstractModel):
         if value <= 0:
             raise ArgumentException("Коэффициент пересчета должен быть положительным числом")
         self.__factor = float(value)
+
+    @staticmethod
+    def create_gramm():
+        # Создание единицы измерения грамм
+        return UnitModel("грамм", 1.0)
+
+    @staticmethod
+    def create_killogramm():
+        # Создание единицы измерения килограмм
+        gramm = UnitModel.create_gramm()
+        return UnitModel("килограмм", 1000.0, gramm)
