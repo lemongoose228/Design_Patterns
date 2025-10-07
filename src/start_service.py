@@ -2,7 +2,9 @@ from src.reposity import reposity
 from src.models.unit_model import UnitModel
 from src.models.nomenclature_group_model import NomenclatureGroupModel
 from src.models.nomenclature_model import NomenclatureModel
-from src.models.receipt_model import ReceiptModel, IngredientModel, CookingStepModel
+from src.models.receipt_model import ReceiptModel
+from src.models.ingredient_model import IngredientModel
+from src.models.cooking_step_model import CookingStepModel
 from abc import ABC, abstractmethod
 
 class BaseDataCreator(ABC):
@@ -36,15 +38,21 @@ class DefaultDataCreator(BaseDataCreator):
     
     def _create_units(self, repo: reposity):
         """Создание единиц измерения"""
+        # Создаем уникальные базовые единицы
+        gram_unit = UnitModel("грамм", 1.0)
+        piece_unit = UnitModel("штука", 1.0)
+        ml_unit = UnitModel("миллилитр", 1.0)
+        
+        # Создаем производные единицы с ссылками на базовые
+        kg_unit = UnitModel("килограмм", 1000.0, gram_unit)
+        liter_unit = UnitModel("литр", 1000.0, ml_unit)
+        spoon_unit = UnitModel("столовая ложка", 15.0, gram_unit)
+        tea_spoon_unit = UnitModel("чайная ложка", 5.0, gram_unit)
+        pinch_unit = UnitModel("щепотка", 1.0, gram_unit)
+        
         units = [
-            UnitModel("грамм", 1.0),
-            UnitModel("килограмм", 1000.0),
-            UnitModel("штука", 1.0),
-            UnitModel("миллилитр", 1.0),
-            UnitModel("литр", 1000.0),
-            UnitModel("столовая ложка", 15.0),
-            UnitModel("чайная ложка", 5.0),
-            UnitModel("щепотка", 1.0)
+            gram_unit, kg_unit, piece_unit, ml_unit, liter_unit,
+            spoon_unit, tea_spoon_unit, pinch_unit
         ]
         repo.set_data(reposity.range_key(), units)
     
@@ -106,14 +114,14 @@ class DefaultDataCreator(BaseDataCreator):
         
         repo.set_data(reposity.nomenclature_key(), nomenclature_list)
     
-    def _find_or_create_group(self, groups: list, group_name: str) -> NomenclatureGroupModel:
+    def _find_or_create_group(self, groups: list, group_name: str):
         """Находит группу по имени или создает новую"""
         for group in groups:
             if group.name == group_name:
                 return group
         return NomenclatureGroupModel(group_name)
     
-    def _find_or_create_unit(self, units: list, unit_name: str, factor: float = 1.0) -> UnitModel:
+    def _find_or_create_unit(self, units: list, unit_name: str, factor: float = 1.0):
         """Находит единицу измерения по имени или создает новую"""
         for unit in units:
             if unit.name == unit_name:
@@ -131,7 +139,6 @@ class DefaultDataCreator(BaseDataCreator):
                 if item.name == name:
                     return item
             # Если не нашли, создаем новую номенклатуру
-            print(f"Предупреждение: номенклатура '{name}' не найдена, создается новая")
             return NomenclatureModel(name, name)
         
         def find_unit(name):
@@ -139,90 +146,75 @@ class DefaultDataCreator(BaseDataCreator):
                 if unit.name == name:
                     return unit
             # Если не нашли, создаем новую единицу
-            print(f"Предупреждение: единица измерения '{name}' не найдена, создается новая")
             return UnitModel(name, 1.0)
         
         # Рецепт 1: Драники картофельные
         драники = ReceiptModel("Драники картофельные", 4, "30 мин")
         
         # Ингредиенты для драников
-        драники.add_ingredient(IngredientModel(
-            find_nomenclature("Картофель"), 500, find_unit("грамм")
-        ))
-        драники.add_ingredient(IngredientModel(
-            find_nomenclature("Лук репчатый"), 1, find_unit("штука")
-        ))
-        драники.add_ingredient(IngredientModel(
-            find_nomenclature("Яйца"), 1, find_unit("штука")
-        ))
-        драники.add_ingredient(IngredientModel(
-            find_nomenclature("Мука пшеничная"), 2, find_unit("столовая ложка")
-        ))
-        драники.add_ingredient(IngredientModel(
-            find_nomenclature("Соль"), 0.5, find_unit("чайная ложка")
-        ))
-        драники.add_ingredient(IngredientModel(
-            find_nomenclature("Перец черный"), 2, find_unit("щепотка")
-        ))
-        драники.add_ingredient(IngredientModel(
-            find_nomenclature("Масло сливочное"), 50, find_unit("грамм")
-        ))
+        драники_ингредиенты = [
+            IngredientModel(find_nomenclature("Картофель"), 500, find_unit("грамм")),
+            IngredientModel(find_nomenclature("Лук репчатый"), 1, find_unit("штука")),
+            IngredientModel(find_nomenclature("Яйца"), 1, find_unit("штука")),
+            IngredientModel(find_nomenclature("Мука пшеничная"), 2, find_unit("столовая ложка")),
+            IngredientModel(find_nomenclature("Соль"), 0.5, find_unit("чайная ложка")),
+            IngredientModel(find_nomenclature("Перец черный"), 2, find_unit("щепотка")),
+            IngredientModel(find_nomenclature("Масло сливочное"), 50, find_unit("грамм"))
+        ]
         
         # Шаги приготовления драников
-        драники.add_cooking_step(CookingStepModel(1, 
-            "Картофель и лук очистить. Картофель натереть на мелкой терке, лук на мелкой терке или измельчить в блендере."))
-        драники.add_cooking_step(CookingStepModel(2,
-            "Отжать лишнюю жидкость из картофельной массы. Добавить яйцо, муку, соль, перец. Тщательно перемешать."))
-        драники.add_cooking_step(CookingStepModel(3,
-            "Разогреть сковороду с растительным маслом. Выкладывать тесто столовой ложкой, формируя оладьи."))
-        драники.add_cooking_step(CookingStepModel(4,
-            "Жарить на среднем огне по 3-4 минуты с каждой стороны до золотистой корочки."))
-        драники.add_cooking_step(CookingStepModel(5,
-            "Подавать горячими со сметаной."))
+        драники_шаги = [
+            CookingStepModel(1, "Картофель и лук очистить. Картофель натереть на мелкой терке, лук на мелкой терке или измельчить в блендере."),
+            CookingStepModel(2, "Отжать лишнюю жидкость из картофельной массы. Добавить яйцо, муку, соль, перец. Тщательно перемешать."),
+            CookingStepModel(3, "Разогреть сковороду с растительным маслом. Выкладывать тесто столовой ложкой, формируя оладьи."),
+            CookingStepModel(4, "Жарить на среднем огне по 3-4 минуты с каждой стороны до золотистой корочки."),
+            CookingStepModel(5, "Подавать горячими со сметаной.")
+        ]
         
-        # Рецепт 2: Салат витаминный (новый рецепт)
+        # Рецепт 2: Салат витаминный
         салат = ReceiptModel("Салат витаминный с морковью и яблоком", 2, "15 мин")
         
         # Ингредиенты для салата
-        салат.add_ingredient(IngredientModel(
-            find_nomenclature("Морковь"), 2, find_unit("штука")
-        ))
-        салат.add_ingredient(IngredientModel(
-            find_nomenclature("Яблоки"), 2, find_unit("штука")
-        ))
-        салат.add_ingredient(IngredientModel(
-            find_nomenclature("Сметана"), 100, find_unit("грамм")
-        ))
-        салат.add_ingredient(IngredientModel(
-            find_nomenclature("Сахар"), 1, find_unit("столовая ложка")
-        ))
-        салат.add_ingredient(IngredientModel(
-            find_nomenclature("Укроп"), 10, find_unit("грамм")
-        ))
+        салат_ингредиенты = [
+            IngredientModel(find_nomenclature("Морковь"), 2, find_unit("штука")),
+            IngredientModel(find_nomenclature("Яблоки"), 2, find_unit("штука")),
+            IngredientModel(find_nomenclature("Сметана"), 100, find_unit("грамм")),
+            IngredientModel(find_nomenclature("Сахар"), 1, find_unit("столовая ложка")),
+            IngredientModel(find_nomenclature("Укроп"), 10, find_unit("грамм"))
+        ]
         
         # Шаги приготовления салата
-        салат.add_cooking_step(CookingStepModel(1,
-            "Морковь очистить и натереть на крупной терке."))
-        салат.add_cooking_step(CookingStepModel(2,
-            "Яблоки вымыть, очистить от кожуры и сердцевины, натереть на крупной терке."))
-        салат.add_cooking_step(CookingStepModel(3,
-            "Укроп мелко нарезать."))
-        салат.add_cooking_step(CookingStepModel(4,
-            "Смешать морковь, яблоки и укроп в салатнице."))
-        салат.add_cooking_step(CookingStepModel(5,
-            "Заправить сметаной, добавить сахар, аккуратно перемешать."))
-        салат.add_cooking_step(CookingStepModel(6,
-            "Подавать сразу после приготовления."))
+        салат_шаги = [
+            CookingStepModel(1, "Морковь очистить и натереть на крупной терке."),
+            CookingStepModel(2, "Яблоки вымыть, очистить от кожуры и сердцевины, натереть на крупной терке."),
+            CookingStepModel(3, "Укроп мелко нарезать."),
+            CookingStepModel(4, "Смешать морковь, яблоки и укроп в салатнице."),
+            CookingStepModel(5, "Заправить сметаной, добавить сахар, аккуратно перемешать."),
+            CookingStepModel(6, "Подавать сразу после приготовления.")
+        ]
         
-        receipts = [драники, салат]
-        repo.set_data(reposity.receipt_key(), receipts)
+        # Сохраняем рецепты в репозиторий
+        receipts_data = {
+            "Драники картофельные": {
+                "receipt": драники,
+                "ingredients": драники_ингредиенты,
+                "steps": драники_шаги
+            },
+            "Салат витаминный с морковью и яблоком": {
+                "receipt": салат,
+                "ingredients": салат_ингредиенты,
+                "steps": салат_шаги
+            }
+        }
+        
+        repo.set_data(reposity.receipt_key(), receipts_data)
 
 class start_service:
     __repo: reposity = None
     __data_creator: BaseDataCreator = None
 
     def __init__(self):
-        self.__repo = reposity()  # Репозиторий сам инициализирует данные
+        self.__repo = reposity()
         self.__data_creator = DefaultDataCreator()
 
     # Singletone

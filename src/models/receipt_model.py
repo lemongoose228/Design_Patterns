@@ -1,90 +1,32 @@
+"""
+Модель рецепта приготовления блюда.
+"""
 from src.core.abstract_model import AbstractModel
 from src.core.validator import ArgumentException, Validator
-from src.models.nomenclature_model import NomenclatureModel
-from src.models.unit_model import UnitModel
 
-class IngredientModel:
-    __nomenclature: NomenclatureModel = None
-    __quantity: float = 0.0
-    __unit: UnitModel = None
-
-    def __init__(self, nomenclature: NomenclatureModel, quantity: float, unit: UnitModel):
-        self.nomenclature = nomenclature
-        self.quantity = quantity
-        self.unit = unit
-
-    @property
-    def nomenclature(self) -> NomenclatureModel:
-        return self.__nomenclature
-
-    @nomenclature.setter
-    def nomenclature(self, value: NomenclatureModel):
-        if not isinstance(value, NomenclatureModel):
-            raise ArgumentException("Номенклатура должна быть экземпляром NomenclatureModel")
-        self.__nomenclature = value
-
-    @property
-    def quantity(self) -> float:
-        return self.__quantity
-
-    @quantity.setter
-    def quantity(self, value: float):
-        Validator.validate_argument(value, (int, float), "quantity")
-        if value <= 0:
-            raise ArgumentException("Количество должно быть положительным числом")
-        self.__quantity = float(value)
-
-    @property
-    def unit(self) -> UnitModel:
-        return self.__unit
-
-    @unit.setter
-    def unit(self, value: UnitModel):
-        if not isinstance(value, UnitModel):
-            raise ArgumentException("Единица измерения должна быть экземпляром UnitModel")
-        self.__unit = value
-
-    def __str__(self) -> str:
-        return f"{self.nomenclature.name} - {self.quantity} {self.unit.name}"
-
-class CookingStepModel:
-    __description: str = ""
-    __step_number: int = 0
-
-    def __init__(self, step_number: int, description: str):
-        self.step_number = step_number
-        self.description = description
-
-    @property
-    def step_number(self) -> int:
-        return self.__step_number
-
-    @step_number.setter
-    def step_number(self, value: int):
-        Validator.validate_argument(value, int, "step_number")
-        if value <= 0:
-            raise ArgumentException("Номер шага должен быть положительным числом")
-        self.__step_number = value
-
-    @property
-    def description(self) -> str:
-        return self.__description
-
-    @description.setter
-    def description(self, value: str):
-        Validator.validate_argument(value, str, "description", max_length=500)
-        self.__description = value.strip()
-
-    def __str__(self) -> str:
-        return f"{self.step_number}. {self.description}"
 
 class ReceiptModel(AbstractModel):
-    __portions: int = 1
-    __cooking_time: str = ""
-    __ingredients: list[IngredientModel] = None
-    __cooking_steps: list[CookingStepModel] = None
+    """
+    Модель, представляющая кулинарный рецепт.
+    
+    Содержит информацию о рецепте, включая ингредиенты и шаги приготовления.
+    Наследует базовую функциональность от AbstractModel.
+    """
+
+    __portions: int = 1  # Количество порций
+    __cooking_time: str = ""  # Время приготовления
+    __ingredients: list = None  # Список ингредиентов
+    __cooking_steps: list = None  # Список шагов приготовления
 
     def __init__(self, name: str = "", portions: int = 1, cooking_time: str = ""):
+        """
+        Инициализирует модель рецепта.
+        
+        Args:
+            name (str): Название рецепта
+            portions (int): Количество порций
+            cooking_time (str): Ориентировочное время приготовления
+        """
         super().__init__(name)
         self.portions = portions
         self.cooking_time = cooking_time
@@ -93,10 +35,25 @@ class ReceiptModel(AbstractModel):
 
     @property
     def portions(self) -> int:
+        """
+        Получает количество порций.
+        
+        Returns:
+            int: Количество порций, на которое рассчитан рецепт
+        """
         return self.__portions
 
     @portions.setter
     def portions(self, value: int):
+        """
+        Устанавливает количество порций с валидацией.
+        
+        Args:
+            value (int): Количество порций
+            
+        Raises:
+            ArgumentException: Если количество порций не является положительным числом
+        """
         Validator.validate_argument(value, int, "portions")
         if value <= 0:
             raise ArgumentException("Количество порций должно быть положительным числом")
@@ -104,30 +61,53 @@ class ReceiptModel(AbstractModel):
 
     @property
     def cooking_time(self) -> str:
+        """
+        Получает время приготовления.
+        
+        Returns:
+            str: Описание времени приготовления
+        """
         return self.__cooking_time
 
     @cooking_time.setter
     def cooking_time(self, value: str):
+        """
+        Устанавливает время приготовления с валидацией.
+        
+        Args:
+            value (str): Время приготовления
+            
+        Raises:
+            ArgumentException: Если описание времени превышает максимальную длину
+        """
         Validator.validate_argument(value, str, "cooking_time", max_length=50)
         self.__cooking_time = value.strip()
 
     @property
-    def ingredients(self) -> list[IngredientModel]:
+    def ingredients(self):
+        """
+        Получает список ингредиентов.
+        
+        Returns:
+            list: Копия списка ингредиентов рецепта
+        """
         return self.__ingredients.copy()
 
-    def add_ingredient(self, ingredient: IngredientModel):
-        if not isinstance(ingredient, IngredientModel):
-            raise ArgumentException("Ингредиент должен быть экземпляром IngredientModel")
-        self.__ingredients.append(ingredient)
-
     @property
-    def cooking_steps(self) -> list[CookingStepModel]:
+    def cooking_steps(self):
+        """
+        Получает список шагов приготовления.
+        
+        Returns:
+            list: Копия списка шагов приготовления рецепта
+        """
         return self.__cooking_steps.copy()
 
-    def add_cooking_step(self, step: CookingStepModel):
-        if not isinstance(step, CookingStepModel):
-            raise ArgumentException("Шаг приготовления должен быть экземпляром CookingStepModel")
-        self.__cooking_steps.append(step)
-
     def __str__(self) -> str:
+        """
+        Строковое представление рецепта.
+        
+        Returns:
+            str: Рецепт в формате "название (порции, время приготовления)"
+        """
         return f"{self.name} ({self.portions} порций, {self.cooking_time})"
