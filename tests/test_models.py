@@ -222,3 +222,6 @@ class TestNomenclatureModel(unittest.TestCase):
         # Слишком длинное наименование
         with self.assertRaises(ArgumentException):
             NomenclatureModel("Тест", "A" * 256)
+
+if __name__ == '__main__':
+    unittest.main()
