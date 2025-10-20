@@ -1,0 +1,26 @@
+### Главная страница
+GET http://localhost:5000/
+
+### Получить поддерживаемые форматы
+GET http://localhost:5000/api/formats
+
+### Единицы измерения в JSON (по умолчанию)
+GET http://localhost:5000/api/units
+
+### Единицы измерения в CSV
+GET http://localhost:5000/api/units?format=csv
+
+### Единицы измерения в Markdown
+GET http://localhost:5000/api/units?format=markdown
+
+### Единицы измерения в XML
+GET http://localhost:5000/api/units?format=xml
+
+### Номенклатурные группы в JSON
+GET http://localhost:5000/api/groups
+
+### Номенклатура в CSV
+GET http://localhost:5000/api/nomenclature?format=csv
+
+### Рецепты в Markdown
+GET http://localhost:5000/api/receipts?format=markdown
