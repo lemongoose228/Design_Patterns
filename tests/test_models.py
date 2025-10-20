@@ -223,5 +223,76 @@ class TestNomenclatureModel(unittest.TestCase):
         with self.assertRaises(ArgumentException):
             NomenclatureModel("Тест", "A" * 256)
 
+
+class TestSettingsResponseFormat(unittest.TestCase):
+    """
+    Тесты для проверки формата ответа в настройках.
+    """
+    
+    def test_settings_response_format_initialization(self):
+        """Тест инициализации формата ответа в настройках."""
+        settings = Settings()
+        self.assertEqual(settings.response_format, "json")
+    
+    def test_settings_response_format_assignment(self):
+        """Тест установки формата ответа."""
+        settings = Settings()
+        
+        # Проверка корректных форматов
+        settings.response_format = "csv"
+        self.assertEqual(settings.response_format, "csv")
+        
+        settings.response_format = "markdown"
+        self.assertEqual(settings.response_format, "markdown")
+        
+        settings.response_format = "json"
+        self.assertEqual(settings.response_format, "json")
+        
+        settings.response_format = "xml"
+        self.assertEqual(settings.response_format, "xml")
+        
+        # Проверка некорректного формата
+        with self.assertRaises(ValueError):
+            settings.response_format = "invalid_format"
+    
+    def test_config_loading_response_format(self):
+        """Тест загрузки формата ответа из конфигурации."""
+        manager = SettingsManager("settings.json")
+        success = manager.load_config()
+        self.assertTrue(success)
+        
+        # Проверяем, что формат ответа загрузился
+        self.assertIsNotNone(manager.app_config.response_format)
+        self.assertIn(manager.app_config.response_format, ["csv", "markdown", "json", "xml"])
+
+    def test_config_conversion_response_format(self):
+        """Тест конвертации формата ответа из конфигурации."""
+        manager = SettingsManager()
+        
+        test_config = {
+            "company": {
+                "name": "Тестовая организация",
+                "inn": "123456789012",
+                "account": "12345678901",
+                "correspondent_account": "98765432109",
+                "BIK": "123456789",
+                "ownership_type": "ООО"
+            },
+            "response_format": "markdown"
+        }
+        
+        converted_settings = manager.convert_config(test_config)
+        
+        # Проверяем формат ответа
+        self.assertEqual(converted_settings.response_format, "markdown")
+
+    def test_default_config_response_format(self):
+        """Тест формата ответа по умолчанию."""
+        manager = SettingsManager()
+        manager.set_default_config()
+        
+        # Проверяем что формат ответа по умолчанию установлен
+        self.assertEqual(manager.app_config.response_format, "json")
+
 if __name__ == '__main__':
     unittest.main()
